@@ -40,8 +40,8 @@ class ReactiveLockManagerMongoTest {
   private static final Duration TTL = Duration.ofSeconds(30);
 
   private static final ZonedDateTime EXPIRES_AT = ZonedDateTime.ofInstant(NOW, UTC).plus(TTL);
-  private static final String MONGODB_ID = "some-mongodb-id";
-  private static final Lock LOCK = new Lock(MONGODB_ID, UNIQUE_IDENTIFIER, EXPIRES_AT);
+  private static final String LOCK_ID = "some-mongodb-id";
+  private static final Lock LOCK = new Lock(LOCK_ID, UNIQUE_IDENTIFIER, EXPIRES_AT);
 
   @Mock
   private ReactiveMongoTemplate reactiveMongoTemplate;
@@ -120,7 +120,7 @@ class ReactiveLockManagerMongoTest {
   }
 
   private void givenMongoInsertedIsInvokedSuccessfully() {
-    var lockMongoEntity = new LockMongoEntity(MONGODB_ID, UNIQUE_IDENTIFIER, EXPIRES_AT.toLocalDateTime());
+    var lockMongoEntity = new LockMongoEntity(LOCK_ID, UNIQUE_IDENTIFIER, EXPIRES_AT.toLocalDateTime());
     doReturn(Mono.just(lockMongoEntity))
       .when(reactiveMongoTemplate).insert(any(LockMongoEntity.class));
   }
@@ -182,7 +182,7 @@ class ReactiveLockManagerMongoTest {
   }
 
   private void thenMongoRemoveIsInvoked() {
-    var expected = query(where("id").is(MONGODB_ID).and("uniqueIdentifier").is(UNIQUE_IDENTIFIER)).limit(1);
+    var expected = query(where("id").is(LOCK_ID).and("uniqueIdentifier").is(UNIQUE_IDENTIFIER)).limit(1);
     verify(reactiveMongoTemplate).remove(expected, LockMongoEntity.class);
   }
 
