@@ -11,6 +11,7 @@
 
   <modules>
     <module>lock-manager-reactive</module>
+    <module>lock-manager-reactive-mongo</module>
   </modules>
 
   <properties>
