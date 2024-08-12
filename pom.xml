@@ -11,7 +11,7 @@
 
   <modules>
     <module>lock-manager-reactive</module>
-    <module>lock-manager-reactive-mongo</module>
+    <module>lock-manager-reactive-mongodb</module>
     <module>lock-manager-reactive-redis</module>
   </modules>
 
