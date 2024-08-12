@@ -1,4 +1,4 @@
-package com.github.elgleidson.lockmanager;
+package com.github.elgleidson.lock;
 
 import java.time.ZonedDateTime;
 

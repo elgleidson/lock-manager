@@ -1,4 +1,4 @@
-package com.github.elgleidson.lockmanager;
+package com.github.elgleidson.lock;
 
 import static java.time.ZoneOffset.UTC;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,7 +11,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import com.github.elgleidson.lockmanager.ReactiveLockManagerMongo.LockMongoEntity;
+import com.github.elgleidson.lock.ReactiveLockManagerMongo.LockMongoEntity;
 import com.mongodb.client.result.DeleteResult;
 import java.time.Clock;
 import java.time.Duration;

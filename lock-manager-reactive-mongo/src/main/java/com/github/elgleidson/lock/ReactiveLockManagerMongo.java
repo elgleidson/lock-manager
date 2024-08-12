@@ -1,4 +1,4 @@
-package com.github.elgleidson.lockmanager;
+package com.github.elgleidson.lock;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;

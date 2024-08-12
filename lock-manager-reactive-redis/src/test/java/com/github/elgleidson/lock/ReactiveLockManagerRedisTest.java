@@ -1,6 +1,6 @@
-package com.github.elgleidson.lockmanager;
+package com.github.elgleidson.lock;
 
-import static com.github.elgleidson.lockmanager.ReactiveLockManagerRedis.KEYSPACE;
+import static com.github.elgleidson.lock.ReactiveLockManagerRedis.KEYSPACE;
 import static java.time.ZoneOffset.UTC;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

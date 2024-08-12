@@ -1,4 +1,4 @@
-package com.github.elgleidson.lockmanager;
+package com.github.elgleidson.lock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
