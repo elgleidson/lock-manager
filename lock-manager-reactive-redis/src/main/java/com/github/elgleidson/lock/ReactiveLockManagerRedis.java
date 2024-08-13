@@ -5,7 +5,6 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import reactor.core.publisher.Mono;
 
@@ -18,12 +17,11 @@ public class ReactiveLockManagerRedis implements ReactiveLockManager {
   private final Clock clock;
   private final UUIDWrapper uuidWrapper;
 
-  @Autowired
   public ReactiveLockManagerRedis(ReactiveStringRedisTemplate reactiveStringRedisTemplate) {
     this(reactiveStringRedisTemplate, Clock.systemUTC(), new UUIDWrapper());
   }
 
-  public ReactiveLockManagerRedis(ReactiveStringRedisTemplate reactiveStringRedisTemplate, Clock clock, UUIDWrapper uuidWrapper) {
+  protected ReactiveLockManagerRedis(ReactiveStringRedisTemplate reactiveStringRedisTemplate, Clock clock, UUIDWrapper uuidWrapper) {
     this.reactiveStringRedisTemplate = reactiveStringRedisTemplate;
     this.clock = clock;
     this.uuidWrapper = uuidWrapper;

@@ -9,7 +9,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
@@ -23,12 +22,11 @@ public class ReactiveLockManagerMongo implements ReactiveLockManager {
   private final ReactiveMongoTemplate reactiveMongoTemplate;
   private final Clock clock;
 
-  @Autowired
   public ReactiveLockManagerMongo(ReactiveMongoTemplate reactiveMongoTemplate) {
     this(reactiveMongoTemplate, Clock.systemUTC());
   }
 
-  public ReactiveLockManagerMongo(ReactiveMongoTemplate reactiveMongoTemplate, Clock clock) {
+  protected ReactiveLockManagerMongo(ReactiveMongoTemplate reactiveMongoTemplate, Clock clock) {
     this.reactiveMongoTemplate = reactiveMongoTemplate;
     this.clock = clock;
   }
