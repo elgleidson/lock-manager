@@ -54,7 +54,21 @@ class ReactiveLockManagerTest {
     initPublishers(exception);
     givenAMonoSupplier();
     givenACallToLock();
+    givenACallToUnlock();
     whenIWrap();
+    thenIExpectWrapException(exception);
+    thenTheMonoIsCalled();
+    thenLockIsInvoked();
+    thenUnlockIsInvoked();
+  }
+
+  @Test
+  void wrapWithErrorNotUnlock() {
+    var exception = new RuntimeException("test");
+    initPublishers(exception);
+    givenAMonoSupplier();
+    givenACallToLock();
+    whenIWrap(false);
     thenIExpectWrapException(exception);
     thenTheMonoIsCalled();
     thenLockIsInvoked();
@@ -89,6 +103,10 @@ class ReactiveLockManagerTest {
 
   private void whenIWrap() {
     wrapResult = lockManager.wrap(UNIQUE_IDENTIFIER, TTL, monoSupplier);
+  }
+
+  private void whenIWrap(boolean onErrorUnlock) {
+    wrapResult = lockManager.wrap(UNIQUE_IDENTIFIER, TTL, onErrorUnlock, monoSupplier);
   }
 
   private void thenIExpectWrapResult() {
