@@ -3,7 +3,6 @@ package com.github.elgleidson.lock;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
-import com.mongodb.client.result.DeleteResult;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -49,16 +48,16 @@ public class ReactiveLockManagerMongo implements ReactiveLockManager {
   }
 
   @Override
-  public Mono<Long> unlock(Lock lock) {
+  public Mono<Boolean> unlock(Lock lock) {
     // only unlocks if lock id and unique identifier match
     var query = query(where("id").is(lock.id()).and("uniqueIdentifier").is(lock.uniqueIdentifier())).limit(1);
     return reactiveMongoTemplate.remove(query, LockMongoEntity.class)
-      .map(DeleteResult::getDeletedCount)
-      .defaultIfEmpty(0L)
+      .map(deleteResult -> deleteResult.getDeletedCount() > 0)
+      .defaultIfEmpty(false)
       .onErrorResume(throwable -> {
         // log the error, but returns successfully as the lock will expire (TTL)
         log.error("error unlock(): message={}", throwable.getMessage());
-        return Mono.just(0L);
+        return Mono.just(false);
       });
   }
 

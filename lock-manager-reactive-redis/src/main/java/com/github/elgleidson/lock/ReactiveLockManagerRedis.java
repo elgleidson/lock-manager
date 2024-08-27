@@ -49,7 +49,7 @@ public class ReactiveLockManagerRedis implements ReactiveLockManager {
   }
 
   @Override
-  public Mono<Long> unlock(Lock lock) {
+  public Mono<Boolean> unlock(Lock lock) {
     // only unlocks if the lock id matches as uniqueIdentifier is the cache key
     var lockKey = lockKey(lock.uniqueIdentifier());
     return reactiveStringRedisTemplate.opsForValue().get(lockKey)
@@ -59,15 +59,15 @@ public class ReactiveLockManagerRedis implements ReactiveLockManager {
         // log it for tracking purposes!
         if (!lock.id().equals(value)) {
           log.warn("unlock(): another process has acquired the lock on '{}'", lock.uniqueIdentifier());
-          return Mono.just(0L);
+          return Mono.just(false);
         }
-        return reactiveStringRedisTemplate.delete(lockKey);
+        return reactiveStringRedisTemplate.delete(lockKey).map(deleted -> deleted > 0);
       })
-      .defaultIfEmpty(0L)
+      .defaultIfEmpty(false)
       .onErrorResume(throwable -> {
         // log the error, but returns successfully as the lock will expire (TTL)
         log.error("error unlock(): message={}", throwable.getMessage());
-        return Mono.just(0L);
+        return Mono.just(false);
       });
   }
 

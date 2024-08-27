@@ -20,6 +20,6 @@ public interface ReactiveLockManager {
 
   Mono<Lock> lock(String uniqueIdentifier, Duration expiresIn);
 
-  Mono<Long> unlock(Lock lock);
+  Mono<Boolean> unlock(Lock lock);
 
 }

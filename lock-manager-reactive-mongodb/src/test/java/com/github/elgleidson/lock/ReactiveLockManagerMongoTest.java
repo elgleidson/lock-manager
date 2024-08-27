@@ -50,7 +50,7 @@ class ReactiveLockManagerMongoTest {
 
   private final ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
   private Mono<Lock> lockResult;
-  private Mono<Long> unlockResult;
+  private Mono<Boolean> unlockResult;
 
   @BeforeEach
   void setUp() {
@@ -97,7 +97,7 @@ class ReactiveLockManagerMongoTest {
   void unlock() {
     givenMongoRemoveIsInvokedSuccessfully();
     whenIUnlock();
-    thenIExpectUnlock(1L);
+    thenIExpectUnlock(true);
     thenMongoRemoveIsInvoked();
   }
 
@@ -105,7 +105,7 @@ class ReactiveLockManagerMongoTest {
   void unlockRecordNotFound() {
     givenMongoRemoveDoesNotFindAnyRecord();
     whenIUnlock();
-    thenIExpectUnlock(0L);
+    thenIExpectUnlock(false);
     thenMongoRemoveIsInvoked();
   }
 
@@ -114,7 +114,7 @@ class ReactiveLockManagerMongoTest {
     var exception = new RuntimeException("test exception");
     givenMongoTemplateRemoveThrowsAnException(exception);
     whenIUnlock();
-    thenIExpectUnlock(0L);
+    thenIExpectUnlock(false);
     thenMongoRemoveIsInvoked();
     thenTheLogsContains("[ERROR] error unlock(): message=test exception");
   }
@@ -172,7 +172,7 @@ class ReactiveLockManagerMongoTest {
     );
   }
 
-  private void thenIExpectUnlock(Long expected) {
+  private void thenIExpectUnlock(Boolean expected) {
     StepVerifier.create(unlockResult).expectNext(expected).verifyComplete();
   }
 

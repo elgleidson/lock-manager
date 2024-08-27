@@ -51,7 +51,7 @@ class ReactiveLockManagerRedisTest {
 
   private final ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
   private Mono<Lock> lockResult;
-  private Mono<Long> unlockResult;
+  private Mono<Boolean> unlockResult;
 
   @BeforeEach
   void setUp() {
@@ -102,7 +102,7 @@ class ReactiveLockManagerRedisTest {
     givenRedisTemplateGetIsInvokedSuccessfully();
     givenRedisTemplateDeleteIsInvokedSuccessfully();
     whenIUnlock();
-    thenIExpectUnlock(1L);
+    thenIExpectUnlock(true);
     thenRedisTemplateGetIsInvoked();
     thenRedisTemplateDeleteIsInvoked();
   }
@@ -111,7 +111,7 @@ class ReactiveLockManagerRedisTest {
   void unlockNotFoundGet() {
     givenRedisTemplateGetDoesNotFindAnyRecord();
     whenIUnlock();
-    thenIExpectUnlock(0L);
+    thenIExpectUnlock(false);
     thenRedisTemplateGetIsInvoked();
     thenRedisTemplateDeleteIsNotInvoked();
   }
@@ -121,7 +121,7 @@ class ReactiveLockManagerRedisTest {
     givenRedisTemplateGetIsInvokedSuccessfully();
     givenRedisTemplateDeleteDoesNotFindAnyRecord();
     whenIUnlock();
-    thenIExpectUnlock(0L);
+    thenIExpectUnlock(false);
     thenRedisTemplateGetIsInvoked();
     thenRedisTemplateDeleteIsInvoked();
   }
@@ -130,7 +130,7 @@ class ReactiveLockManagerRedisTest {
   void unlockDifferentValue() {
     givenRedisTemplateGetIsInvokedSuccessfully("different-value");
     whenIUnlock();
-    thenIExpectUnlock(0L);
+    thenIExpectUnlock(false);
     thenRedisTemplateGetIsInvoked();
     thenRedisTemplateDeleteIsNotInvoked();
     thenTheLogsContains("[WARN] unlock(): another process has acquired the lock on 'my-unique-identifier'");
@@ -141,7 +141,7 @@ class ReactiveLockManagerRedisTest {
     var exception = new RuntimeException("test exception");
     givenRedisTemplateGetThrowsAnException(exception);
     whenIUnlock();
-    thenIExpectUnlock(0L);
+    thenIExpectUnlock(false);
     thenRedisTemplateGetIsInvoked();
     thenRedisTemplateDeleteIsNotInvoked();
     thenTheLogsContains("[ERROR] error unlock(): message=test exception");
@@ -153,7 +153,7 @@ class ReactiveLockManagerRedisTest {
     givenRedisTemplateGetIsInvokedSuccessfully();
     givenRedisTemplateDeleteThrowsAnException(exception);
     whenIUnlock();
-    thenIExpectUnlock(0L);
+    thenIExpectUnlock(false);
     thenRedisTemplateGetIsInvoked();
     thenRedisTemplateDeleteIsInvoked();
     thenTheLogsContains("[ERROR] error unlock(): message=test exception");
@@ -221,7 +221,7 @@ class ReactiveLockManagerRedisTest {
     StepVerifier.create(lockResult).expectNext(LOCK).verifyComplete();
   }
 
-  private void thenIExpectUnlock(Long expected) {
+  private void thenIExpectUnlock(Boolean expected) {
     StepVerifier.create(unlockResult).expectNext(expected).verifyComplete();
   }
 
