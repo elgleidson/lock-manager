@@ -44,7 +44,9 @@ public class ReactiveLockManagerMongo implements ReactiveLockManager {
         // severity 1 alert as we should be able to acquire a lock
         log.error("error lock(): message={}", throwable.getMessage());
         return LockFailureException.other(uniqueIdentifier, throwable);
-      });
+      })
+      .doFirst(() -> log.debug("trying to acquire lock for {}, expiring in {}", uniqueIdentifier, expiresIn))
+      .doOnSuccess(lock -> log.debug("locked={}", lock));
   }
 
   @Override
@@ -58,7 +60,9 @@ public class ReactiveLockManagerMongo implements ReactiveLockManager {
         // log the error, but returns successfully as the lock will expire (TTL)
         log.error("error unlock(): message={}", throwable.getMessage());
         return Mono.just(false);
-      });
+      })
+      .doFirst(() -> log.debug("trying to unlock {}", lock))
+      .doOnSuccess(unlocked -> log.debug("unlocked={}", unlocked));
   }
 
   private Lock convertToLock(LockMongoEntity lockMongoEntity) {
