@@ -33,7 +33,6 @@ public class ReactiveLockManagerRedis implements ReactiveLockManager {
       .flatMap(lock -> reactiveStringRedisTemplate.opsForValue()
         .setIfAbsent(lockKey(uniqueIdentifier), lock.id(), expiresIn)
         .onErrorMap(throwable -> {
-          // severity 1 alert as we should be able to acquire a lock
           log.error("error lock(): message={}", throwable.getMessage());
           return LockFailureException.other(uniqueIdentifier, throwable);
         })

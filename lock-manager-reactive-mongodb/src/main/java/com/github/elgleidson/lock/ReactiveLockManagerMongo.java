@@ -41,7 +41,6 @@ public class ReactiveLockManagerMongo implements ReactiveLockManager {
           log.warn("error lock(): lock already acquired on '{}'!", uniqueIdentifier);
           return LockFailureException.alreadyLocked(uniqueIdentifier);
         }
-        // severity 1 alert as we should be able to acquire a lock
         log.error("error lock(): message={}", throwable.getMessage());
         return LockFailureException.other(uniqueIdentifier, throwable);
       })
