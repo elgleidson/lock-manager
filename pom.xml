@@ -13,6 +13,7 @@
     <module>lock-manager-reactive</module>
     <module>lock-manager-reactive-mongodb</module>
     <module>lock-manager-reactive-redis</module>
+    <module>lock-manager</module>
   </modules>
 
   <properties>
