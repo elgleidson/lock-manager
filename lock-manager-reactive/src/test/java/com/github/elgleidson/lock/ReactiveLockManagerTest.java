@@ -8,6 +8,7 @@ import static org.mockito.Mockito.*;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.function.Supplier;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Spy;
@@ -35,9 +36,15 @@ class ReactiveLockManagerTest {
   private PublisherProbe<Boolean> publisherProbeUnlock;
   private Mono<Object> wrapResult;
 
+  @BeforeEach
+  void setUp() {
+    publisherProbe = PublisherProbe.of(Mono.just(OBJECT));
+    publisherProbeLock = PublisherProbe.of(Mono.just(LOCK));
+    publisherProbeUnlock = PublisherProbe.of(Mono.just(true));
+  }
+
   @Test
   void wrap() {
-    initPublishers();
     givenAMonoSupplier();
     givenACallToLock();
     givenACallToUnlock();
@@ -49,10 +56,21 @@ class ReactiveLockManagerTest {
   }
 
   @Test
-  void wrapWithError() {
+  void wrapWithErrorFromLock() {
     var exception = new RuntimeException("test");
-    initPublishers(exception);
     givenAMonoSupplier();
+    givenACallToLock(exception);
+    whenIWrap();
+    thenIExpectWrapException(exception);
+    thenLockIsInvoked();
+    thenTheMonoIsNotCalled();
+    thenUnlockIsNotInvoked();
+  }
+
+  @Test
+  void wrapWithErrorFromSupplier() {
+    var exception = new RuntimeException("test");
+    givenAMonoSupplier(exception);
     givenACallToLock();
     givenACallToUnlock();
     whenIWrap();
@@ -63,10 +81,9 @@ class ReactiveLockManagerTest {
   }
 
   @Test
-  void wrapWithErrorNotUnlock() {
+  void wrapWithErrorFromSupplierNotUnlock() {
     var exception = new RuntimeException("test");
-    initPublishers(exception);
-    givenAMonoSupplier();
+    givenAMonoSupplier(exception);
     givenACallToLock();
     whenIWrap(false);
     thenIExpectWrapException(exception);
@@ -75,24 +92,23 @@ class ReactiveLockManagerTest {
     thenUnlockIsNotInvoked();
   }
 
-  private void initPublishers() {
-    publisherProbeLock = PublisherProbe.of(Mono.just(LOCK));
-    publisherProbeUnlock = PublisherProbe.of(Mono.just(true));
-    publisherProbe = PublisherProbe.of(Mono.just(OBJECT));
-  }
-
-  private void initPublishers(Throwable throwable) {
-    publisherProbeLock = PublisherProbe.of(Mono.just(LOCK));
-    publisherProbeUnlock = PublisherProbe.of(Mono.just(true));
-    publisherProbe = PublisherProbe.of(Mono.error(throwable));
-  }
-
   private void givenAMonoSupplier() {
+    monoSupplier = publisherProbe::mono;
+  }
+
+  private void givenAMonoSupplier(Throwable throwable) {
+    publisherProbe = PublisherProbe.of(Mono.error(throwable));
     monoSupplier = publisherProbe::mono;
   }
 
   private void givenACallToLock() {
     // lock method that requires implementation as there is no default one
+    doReturn(publisherProbeLock.mono()).when(lockManager).lock(anyString(), any(Duration.class));
+  }
+
+  private void givenACallToLock(Throwable throwable) {
+    // lock method that requires implementation as there is no default one
+    publisherProbeLock = PublisherProbe.of(Mono.error(throwable));
     doReturn(publisherProbeLock.mono()).when(lockManager).lock(anyString(), any(Duration.class));
   }
 
@@ -138,6 +154,11 @@ class ReactiveLockManagerTest {
   private void thenTheMonoIsCalled() {
     publisherProbe.assertWasRequested();
     publisherProbe.assertWasSubscribed();
+  }
+
+  private void thenTheMonoIsNotCalled() {
+    publisherProbe.assertWasNotRequested();
+    publisherProbe.assertWasNotSubscribed();
   }
 
 }
