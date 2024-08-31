@@ -37,8 +37,8 @@ class LockManagerTest {
     givenACallToUnlock();
     whenIWrap();
     thenIExpectWrapResult();
-    thenSupplierIsCalled();
     thenLockIsInvoked();
+    thenSupplierIsCalled();
     thenUnlockIsInvoked();
   }
 
@@ -49,8 +49,8 @@ class LockManagerTest {
     givenACallToLock();
     givenACallToUnlock();
     assertThatException().isThrownBy(() -> whenIWrap()).isEqualTo(exception);
-    thenSupplierIsCalled();
     thenLockIsInvoked();
+    thenSupplierIsCalled();
     thenUnlockIsInvoked();
   }
 
@@ -60,8 +60,8 @@ class LockManagerTest {
     givenASupplier(exception);
     givenACallToLock();
     assertThatException().isThrownBy(() -> whenIWrap(false)).isEqualTo(exception);
-    thenSupplierIsCalled();
     thenLockIsInvoked();
+    thenSupplierIsCalled();
     thenUnlockIsNotInvoked();
   }
 

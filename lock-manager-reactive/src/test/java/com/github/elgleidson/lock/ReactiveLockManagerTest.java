@@ -43,8 +43,8 @@ class ReactiveLockManagerTest {
     givenACallToUnlock();
     whenIWrap();
     thenIExpectWrapResult();
-    thenTheMonoIsCalled();
     thenLockIsInvoked();
+    thenTheMonoIsCalled();
     thenUnlockIsInvoked();
   }
 
@@ -57,8 +57,8 @@ class ReactiveLockManagerTest {
     givenACallToUnlock();
     whenIWrap();
     thenIExpectWrapException(exception);
-    thenTheMonoIsCalled();
     thenLockIsInvoked();
+    thenTheMonoIsCalled();
     thenUnlockIsInvoked();
   }
 
@@ -70,8 +70,8 @@ class ReactiveLockManagerTest {
     givenACallToLock();
     whenIWrap(false);
     thenIExpectWrapException(exception);
-    thenTheMonoIsCalled();
     thenLockIsInvoked();
+    thenTheMonoIsCalled();
     thenUnlockIsNotInvoked();
   }
 
