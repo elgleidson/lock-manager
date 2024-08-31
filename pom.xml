@@ -14,6 +14,7 @@
     <module>lock-manager-reactive-mongodb</module>
     <module>lock-manager-reactive-redis</module>
     <module>lock-manager</module>
+    <module>lock-manager-mongodb</module>
   </modules>
 
   <properties>
@@ -71,12 +72,6 @@
         <groupId>io.cucumber</groupId>
         <artifactId>cucumber-junit-platform-engine</artifactId>
         <version>${cucumber.version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-webflux</artifactId>
-        <version>${spring-boot.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
