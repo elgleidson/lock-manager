@@ -43,7 +43,18 @@ class LockManagerTest {
   }
 
   @Test
-  void wrapWithError() {
+  void wrapWithErrorFromLock() {
+    var exception = new RuntimeException("test");
+    givenASupplier();
+    givenACallToLock(exception);
+    assertThatException().isThrownBy(() -> whenIWrap()).isEqualTo(exception);
+    thenLockIsInvoked();
+    thenSupplierIsNotCalled();
+    thenUnlockIsNotInvoked();
+  }
+
+  @Test
+  void wrapWithErrorFromSupplier() {
     var exception = new RuntimeException("test");
     givenASupplier(exception);
     givenACallToLock();
@@ -55,7 +66,7 @@ class LockManagerTest {
   }
 
   @Test
-  void wrapWithErrorNotUnlock() {
+  void wrapWithErrorFromSupplierNotUnlock() {
     var exception = new RuntimeException("test");
     givenASupplier(exception);
     givenACallToLock();
@@ -65,10 +76,22 @@ class LockManagerTest {
     thenUnlockIsNotInvoked();
   }
 
+  @Test
+  void wrapWithErrorFromUnlock() {
+    var exception = new RuntimeException("test");
+    givenASupplier();
+    givenACallToLock();
+    givenACallToUnlock(exception);
+    whenIWrap();
+    thenIExpectWrapResult();
+    thenLockIsInvoked();
+    thenSupplierIsCalled();
+    thenUnlockIsInvoked();
+  }
 
   private void givenASupplier() {
     supplier = mock(Supplier.class);
-    doReturn(OBJECT).when(supplier).get();
+    lenient().doReturn(OBJECT).when(supplier).get();
   }
 
   private void givenASupplier(Throwable throwable) {
@@ -81,9 +104,19 @@ class LockManagerTest {
     doReturn(LOCK).when(lockManager).lock(anyString(), any(Duration.class));
   }
 
+  private void givenACallToLock(Throwable throwable) {
+    // lock method that requires implementation as there is no default one
+    doThrow(throwable).when(lockManager).lock(anyString(), any(Duration.class));
+  }
+
   private void givenACallToUnlock() {
     // unlock method that requires implementation as there is no default one
     doReturn(true).when(lockManager).unlock(any(Lock.class));
+  }
+
+  private void givenACallToUnlock(Throwable throwable) {
+    // unlock method that requires implementation as there is no default one
+    doThrow(throwable).when(lockManager).unlock(any(Lock.class));
   }
 
   private void whenIWrap() {
@@ -112,6 +145,10 @@ class LockManagerTest {
 
   private void thenSupplierIsCalled() {
     verify(supplier).get();
+  }
+
+  private void thenSupplierIsNotCalled() {
+    verifyNoInteractions(supplier);
   }
 
 }

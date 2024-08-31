@@ -92,6 +92,19 @@ class ReactiveLockManagerTest {
     thenUnlockIsNotInvoked();
   }
 
+  @Test
+  void wrapWithErrorFromUnlock() {
+    var exception = new RuntimeException("test");
+    givenAMonoSupplier();
+    givenACallToLock();
+    givenACallToUnlock(exception);
+    whenIWrap();
+    thenIExpectWrapResult();
+    thenLockIsInvoked();
+    thenTheMonoIsCalled();
+    thenUnlockIsInvoked();
+  }
+
   private void givenAMonoSupplier() {
     monoSupplier = publisherProbe::mono;
   }
@@ -114,6 +127,12 @@ class ReactiveLockManagerTest {
 
   private void givenACallToUnlock() {
     // unlock method that requires implementation as there is no default one
+    doReturn(publisherProbeUnlock.mono()).when(lockManager).unlock(any(Lock.class));
+  }
+
+  private void givenACallToUnlock(Throwable throwable) {
+    // unlock method that requires implementation as there is no default one
+    publisherProbeUnlock = PublisherProbe.of(Mono.error(throwable));
     doReturn(publisherProbeUnlock.mono()).when(lockManager).unlock(any(Lock.class));
   }
 

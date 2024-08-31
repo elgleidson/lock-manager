@@ -16,16 +16,31 @@ public interface LockManager {
       result = supplier.get();
     } catch (Exception ex) {
       if (onErrorUnlock) {
-        unlock(lock);
+        safeUnlock(lock);
       }
       throw ex;
     }
-    unlock(lock);
+    safeUnlock(lock);
     return result;
+  }
+
+  private boolean safeUnlock(Lock lock) {
+    try {
+      return unlock(lock);
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   Lock lock(String uniqueIdentifier, Duration expiresIn);
 
+  /**
+   * Releases the lock.
+   * <p>This method should never throw an exception. In case of any exception, just log it and return false instead.</p>
+   * <p>You should unlock only when the lock ID and unique identifier match.</p>
+   * @param lock
+   * @return whether the lock was released.
+   */
   boolean unlock(Lock lock);
 
 }

@@ -13,13 +13,24 @@ public interface ReactiveLockManager {
   default <T> Mono<T> wrap(String uniqueIdentifier, Duration expiresIn, boolean onErrorUnlock, Supplier<Mono<T>> monoSupplier) {
     return lock(uniqueIdentifier, expiresIn)
       .flatMap(lock -> Mono.defer(monoSupplier)
-        .flatMap(t -> unlock(lock).thenReturn(t))
-        .onErrorResume(throwable -> onErrorUnlock ? unlock(lock).then(Mono.error(throwable)) : Mono.error(throwable))
+        .flatMap(t -> safeUnlock(lock).thenReturn(t))
+        .onErrorResume(throwable -> onErrorUnlock ? safeUnlock(lock).then(Mono.error(throwable)) : Mono.error(throwable))
       );
+  }
+
+  private Mono<Boolean> safeUnlock(Lock lock) {
+    return unlock(lock).onErrorReturn(false);
   }
 
   Mono<Lock> lock(String uniqueIdentifier, Duration expiresIn);
 
+  /**
+   * Releases the lock.
+   * <p>This method should never throw an exception. In case of any exception, just log it and return false instead.</p>
+   * <p>You should unlock only when the lock ID and unique identifier match.</p>
+   * @param lock
+   * @return whether the lock was released.
+   */
   Mono<Boolean> unlock(Lock lock);
 
 }
