@@ -32,7 +32,7 @@ class ReactiveLockManagerTest {
   private Supplier<Mono<Object>> monoSupplier;
   private PublisherProbe<Object> publisherProbe;
   private PublisherProbe<Lock> publisherProbeLock;
-  private PublisherProbe<Long> publisherProbeUnlock;
+  private PublisherProbe<Boolean> publisherProbeUnlock;
   private Mono<Object> wrapResult;
 
   @Test
@@ -77,13 +77,13 @@ class ReactiveLockManagerTest {
 
   private void initPublishers() {
     publisherProbeLock = PublisherProbe.of(Mono.just(LOCK));
-    publisherProbeUnlock = PublisherProbe.of(Mono.just(1L));
+    publisherProbeUnlock = PublisherProbe.of(Mono.just(true));
     publisherProbe = PublisherProbe.of(Mono.just(OBJECT));
   }
 
   private void initPublishers(Throwable throwable) {
     publisherProbeLock = PublisherProbe.of(Mono.just(LOCK));
-    publisherProbeUnlock = PublisherProbe.of(Mono.just(1L));
+    publisherProbeUnlock = PublisherProbe.of(Mono.just(true));
     publisherProbe = PublisherProbe.of(Mono.error(throwable));
   }
 
