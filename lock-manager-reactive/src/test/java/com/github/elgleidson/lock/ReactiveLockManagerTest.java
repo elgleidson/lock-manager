@@ -56,6 +56,32 @@ class ReactiveLockManagerTest {
   }
 
   @Test
+  void wrapEmpty() {
+    // tests if the implementation is doing .flatMap to unlock, as an empty Mono won't execute .flatMap
+    givenAMonoEmptySupplier();
+    givenACallToLock();
+    givenACallToUnlock();
+    whenIWrap();
+    thenIExpectWrapResultEmpty();
+    thenLockIsInvoked();
+    thenTheMonoIsCalled();
+    thenUnlockIsInvoked();
+  }
+
+  @Test
+  void wrapVoid() {
+    // tests if the implementation is doing .flatMap to unlock, as Mono<Void> won't execute .flatMap
+    givenAMonoVoidSupplier();
+    givenACallToLock();
+    givenACallToUnlock();
+    whenIWrap();
+    thenIExpectWrapResultEmpty();
+    thenLockIsInvoked();
+    thenTheMonoIsCalled();
+    thenUnlockIsInvoked();
+  }
+
+  @Test
   void wrapWithErrorFromLock() {
     var exception = new RuntimeException("test");
     givenAMonoSupplier();
@@ -109,6 +135,17 @@ class ReactiveLockManagerTest {
     monoSupplier = publisherProbe::mono;
   }
 
+  private void givenAMonoEmptySupplier() {
+    publisherProbe = PublisherProbe.empty();
+    monoSupplier = publisherProbe::mono;
+  }
+
+  private void givenAMonoVoidSupplier() {
+    Mono<Void> mono = Mono.just(OBJECT).then();
+    publisherProbe = PublisherProbe.of(mono);
+    monoSupplier = publisherProbe::mono;
+  }
+
   private void givenAMonoSupplier(Throwable throwable) {
     publisherProbe = PublisherProbe.of(Mono.error(throwable));
     monoSupplier = publisherProbe::mono;
@@ -146,6 +183,10 @@ class ReactiveLockManagerTest {
 
   private void thenIExpectWrapResult() {
     StepVerifier.create(wrapResult).expectNext(OBJECT).verifyComplete();
+  }
+
+  private void thenIExpectWrapResultEmpty() {
+    StepVerifier.create(wrapResult).verifyComplete();
   }
 
   private void thenIExpectWrapException(Throwable expectedThrowable) {

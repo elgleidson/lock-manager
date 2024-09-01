@@ -14,6 +14,8 @@ public interface ReactiveLockManager {
     return lock(uniqueIdentifier, expiresIn)
       .flatMap(lock -> Mono.defer(monoSupplier)
         .flatMap(t -> safeUnlock(lock).thenReturn(t))
+        // ? in case we're working with Mono<Void> or an empty Mono is returned by the supplier.
+        .switchIfEmpty(Mono.defer(() -> safeUnlock(lock).then(Mono.empty())))
         .onErrorResume(throwable -> onErrorUnlock ? safeUnlock(lock).then(Mono.error(throwable)) : Mono.error(throwable))
       );
   }
