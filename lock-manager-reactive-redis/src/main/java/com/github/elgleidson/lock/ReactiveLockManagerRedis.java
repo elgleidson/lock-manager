@@ -44,7 +44,9 @@ public class ReactiveLockManagerRedis implements ReactiveLockManager {
           }
           return Mono.just(lock);
         })
-      );
+      )
+      .doFirst(() -> log.debug("trying to acquire lock for {}, expiring in {}", uniqueIdentifier, expiresIn))
+      .doOnSuccess(lock -> log.debug("locked={}", lock));
   }
 
   @Override
@@ -67,7 +69,9 @@ public class ReactiveLockManagerRedis implements ReactiveLockManager {
         // log the error, but returns successfully as the lock will expire (TTL)
         log.error("error unlock(): message={}", throwable.getMessage());
         return Mono.just(false);
-      });
+      })
+      .doFirst(() -> log.debug("trying to unlock {}", lock))
+      .doOnSuccess(unlocked -> log.debug("unlocked={}", unlocked));
   }
 
   private Lock createLock(String uniqueIdentifier, Duration expiresIn) {
