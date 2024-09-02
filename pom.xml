@@ -16,6 +16,7 @@
     <module>lock-manager</module>
     <module>lock-manager-mongodb</module>
     <module>lock-manager-redis</module>
+    <module>lock-manager-core</module>
   </modules>
 
   <properties>
