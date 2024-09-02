@@ -6,20 +6,21 @@
 
   <groupId>com.github.elgleidson</groupId>
   <artifactId>lock-manager-parent</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>${revision}</version>
   <packaging>pom</packaging>
 
   <modules>
+    <module>lock-manager-core</module>
     <module>lock-manager-reactive</module>
     <module>lock-manager-reactive-mongodb</module>
     <module>lock-manager-reactive-redis</module>
     <module>lock-manager</module>
     <module>lock-manager-mongodb</module>
     <module>lock-manager-redis</module>
-    <module>lock-manager-core</module>
   </modules>
 
   <properties>
+    <revision>1.0-SNAPSHOT</revision>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -84,5 +85,33 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <version>1.5.0</version>
+        <configuration>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
