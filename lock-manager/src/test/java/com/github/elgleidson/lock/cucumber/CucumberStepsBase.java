@@ -16,17 +16,35 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class CucumberStepsBase {
+public abstract class CucumberStepsBase {
 
-  private static final Duration TTL = Duration.ofSeconds(30);
-  private static final Duration DELAY = Duration.ofMillis(150);
+  public static final String DURATION_REGEX = "(\\d+(s|ms))";
 
   private final Map<String, AtomicInteger> db = new ConcurrentHashMap<>();
 
   private final LockManager lockManager;
 
+  private Duration ttl;
+  private Duration delay;
+
   public void before() {
     db.clear();
+  }
+
+  public Duration duration(String duration) {
+    var amount = duration.replaceFirst("(ms|s)", "");
+    var timeUnit = duration.replaceFirst(amount, "");
+    return timeUnit.equals("ms")
+      ? Duration.ofMillis(Long.parseLong(amount))
+      : Duration.ofSeconds(Long.parseLong(amount));
+  }
+
+  public void givenLockExpiresIn(Duration duration) {
+    this.ttl = duration;
+  }
+
+  public void givenTheProcessTakes(Duration duration) {
+    this.delay = duration;
   }
 
   public void givenAnExistingRecordWithIdOf(String id) {
@@ -68,7 +86,7 @@ public class CucumberStepsBase {
   @SneakyThrows
   private boolean update(int exec, String id) {
     log.info("exec={}: updating id={}", exec, id);
-    Thread.sleep(DELAY); // to simulate processing
+    Thread.sleep(delay); // to simulate processing
     var updates = db.get(id).incrementAndGet();
     log.info("exec={}: updated id={}, updates={}", exec, id, updates);
     return true;
@@ -76,7 +94,7 @@ public class CucumberStepsBase {
 
   private boolean updateLock(int exec, String id) {
     try {
-      return lockManager.wrap(id, TTL, () -> update(exec, id));
+      return lockManager.wrap(id, ttl, () -> update(exec, id));
     } catch (LockFailureException e) {
       log.error("exec={}: id={}, locked", exec, id);
       return false;

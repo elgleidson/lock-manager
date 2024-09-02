@@ -21,17 +21,35 @@ import reactor.test.StepVerifier;
 @RequiredArgsConstructor
 public abstract class CucumberStepsBase {
 
-  private static final Duration TTL = Duration.ofSeconds(30);
-  private static final Duration DELAY = Duration.ofMillis(150);
+  public static final String DURATION_REGEX = "(\\d+(s|ms))";
 
   private final Map<String, AtomicInteger> db = new ConcurrentHashMap<>();
 
   private final ReactiveLockManager lockManager;
 
+  private Duration ttl;
+  private Duration delay;
+
   private Flux<Boolean> responses;
 
   public void before() {
     db.clear();
+  }
+
+  public Duration duration(String duration) {
+    var amount = duration.replaceFirst("(ms|s)", "");
+    var timeUnit = duration.replaceFirst(amount, "");
+    return timeUnit.equals("ms")
+      ? Duration.ofMillis(Long.parseLong(amount))
+      : Duration.ofSeconds(Long.parseLong(amount));
+  }
+
+  public void givenLockExpiresIn(Duration duration) {
+    this.ttl = duration;
+  }
+
+  public void givenTheProcessTakes(Duration duration) {
+    this.delay = duration;
   }
 
   public void givenAnExistingRecordWithIdOf(String id) {
@@ -78,7 +96,7 @@ public abstract class CucumberStepsBase {
 
   private Mono<Boolean> update(int exec, String id) {
     return Mono.just(db.get(id))
-      .delayElement(DELAY) // to simulate processing
+      .delayElement(delay) // to simulate processing
       .map(AtomicInteger::incrementAndGet)
       .doOnNext(updates -> log.info("exec={}: updated id={}, updates={}", exec, id, updates))
       .thenReturn(true)
@@ -86,7 +104,7 @@ public abstract class CucumberStepsBase {
   }
 
   private Mono<Boolean> updateLock(int exec, String id) {
-    return lockManager.wrap(id, TTL, true, () -> update(exec, id))
+    return lockManager.wrap(id, ttl, true, () -> update(exec, id))
       .onErrorResume(LockFailureException.class, e -> {
         log.error("exec={}: id={}, locked", exec, id);
         return Mono.just(false);
