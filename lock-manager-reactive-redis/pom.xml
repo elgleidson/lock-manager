@@ -34,14 +34,6 @@
       <artifactId>lombok</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.github.elgleidson</groupId>
-      <artifactId>lock-manager-reactive</artifactId>
-      <version>${project.version}</version>
-      <classifier>tests</classifier>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <scope>test</scope>
