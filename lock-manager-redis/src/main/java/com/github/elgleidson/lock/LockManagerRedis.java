@@ -36,6 +36,7 @@ public class LockManagerRedis implements LockManager {
         log.warn("error lock(): lock already acquired on '{}'!", uniqueIdentifier);
         throw LockFailureException.alreadyLocked(uniqueIdentifier);
       }
+      log.debug("locked={}", lock);
       return lock;
     } catch (Exception ex) {
       if (ex instanceof LockFailureException) {
