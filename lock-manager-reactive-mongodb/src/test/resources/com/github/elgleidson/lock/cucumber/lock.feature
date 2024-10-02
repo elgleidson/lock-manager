@@ -36,3 +36,22 @@ Feature: Lock manager
     Given an existing record with id of "123-lock-mc"
     When I call the lock update 3 times concurrently with id "123-lock-mc"
     Then the record with id "123-lock-mc" is updated 1 time
+
+  Scenario: Cannot acquire lock during expiration window
+    Given an existing record with id of "123-not-expired"
+    Given the lock expires in 1s
+    When I try to lock the record with id of "123-not-expired"
+    Then the lock is acquired
+    Given I wait 500ms
+    When I try to lock the record with id of "123-not-expired"
+    Then the lock is not acquired
+
+#  commented because it doesn't work with embedded mongo
+#  Scenario: Can acquire lock after expiration window
+#    Given an existing record with id of "123-expired"
+#    Given the lock expires in 1s
+#    When I try to lock the record with id of "123-expired"
+#    Then the lock is acquired
+#    Given I wait 1s
+#    When I try to lock the record with id of "123-expired"
+#    Then the lock is acquired

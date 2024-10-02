@@ -1,7 +1,9 @@
 package com.github.elgleidson.lock.cucumber;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
+import com.github.elgleidson.lock.Lock;
 import com.github.elgleidson.lock.LockFailureException;
 import com.github.elgleidson.lock.LockManager;
 import com.github.elgleidson.lock.TestApplication;
@@ -13,6 +15,7 @@ import io.cucumber.java.en.When;
 import io.cucumber.spring.CucumberContextConfiguration;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
@@ -25,7 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
 @CucumberContextConfiguration
 @SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.NONE, properties = {
-  "de.flapdoodle.mongodb.embedded.version=6.3.2",
+  "de.flapdoodle.mongodb.embedded.version=7.0.12",
   "spring.data.mongodb.auto-index-creation=true"
 })
 @Slf4j
@@ -38,6 +41,7 @@ public class CucumberSteps {
 
   private Duration ttl;
   private Duration delay;
+  private Optional<Lock> lockResult;
 
   @Before
   public void before() {
@@ -66,6 +70,26 @@ public class CucumberSteps {
   @Given("an existing record with id of {string}")
   public void givenAnExistingRecordWithIdOf(String id) {
     db.put(id, new AtomicInteger(0));
+  }
+
+  @Given("I try to lock the record with id of {string}")
+  public void givenILockRecordWithIdOf(String id) {
+    try {
+      lockResult = Optional.of(lockManager.lock(id, ttl));
+    } catch (LockFailureException e) {
+      lockResult = Optional.empty();
+    }
+  }
+
+  @Given("I unlock")
+  public void givenIUnlock() {
+    var lock = lockResult.get();
+    lockManager.unlock(lock);
+  }
+
+  @Given("I wait {duration}")
+  public void givenIWait(Duration duration) {
+    await().during(duration).until(() -> true);
   }
 
   @When("I call the update {int} time(s) concurrently with id {string}")
@@ -126,5 +150,15 @@ public class CucumberSteps {
   public void thenTheRecordIsUpdated(String id, int expectedUpdates) {
     var updates = db.get(id).get();
     assertThat(updates).isEqualTo(expectedUpdates);
+  }
+
+  @Then("the lock is acquired")
+  public void thenTheLockIsAcquired() {
+    assertThat(lockResult).isPresent();
+  }
+
+  @Then("the lock is not acquired")
+  public void thenTheLockIsNotAcquired() {
+    assertThat(lockResult).isNotPresent();
   }
 }

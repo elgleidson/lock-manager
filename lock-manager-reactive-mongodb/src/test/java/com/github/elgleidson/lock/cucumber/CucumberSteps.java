@@ -1,7 +1,9 @@
 package com.github.elgleidson.lock.cucumber;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
+import com.github.elgleidson.lock.Lock;
 import com.github.elgleidson.lock.LockFailureException;
 import com.github.elgleidson.lock.ReactiveLockManager;
 import com.github.elgleidson.lock.TestApplication;
@@ -13,6 +15,7 @@ import io.cucumber.java.en.When;
 import io.cucumber.spring.CucumberContextConfiguration;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
@@ -24,11 +27,10 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import reactor.test.StepVerifier;
 
 @CucumberContextConfiguration
 @SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.NONE, properties = {
-  "de.flapdoodle.mongodb.embedded.version=6.3.2",
+  "de.flapdoodle.mongodb.embedded.version=7.0.12",
   "spring.data.mongodb.auto-index-creation=true"
 })
 @Slf4j
@@ -41,8 +43,7 @@ public class CucumberSteps {
 
   private Duration ttl;
   private Duration delay;
-
-  private Flux<Boolean> responses;
+  private Optional<Lock> lockResult;
 
   @Before
   public void before() {
@@ -73,6 +74,26 @@ public class CucumberSteps {
     db.put(id, new AtomicInteger(0));
   }
 
+  @Given("I try to lock the record with id of {string}")
+  public void givenILockRecordWithIdOf(String id) {
+    try {
+      lockResult = lockManager.lock(id, ttl).blockOptional();
+    } catch (LockFailureException e) {
+      lockResult = Optional.empty();
+    }
+  }
+
+  @Given("I unlock")
+  public void givenIUnlock() {
+    var lock = lockResult.get();
+    lockManager.unlock(lock).block();
+  }
+
+  @Given("I wait {duration}")
+  public void givenIWait(Duration duration) {
+    await().during(duration).until(() -> true);
+  }
+
   @When("I call the update {int} time(s) concurrently with id {string}")
   public void callTheUpdateConcurrently(int concurrency, String id) {
     callUpdateConcurrently(concurrency, id, this::update);
@@ -94,17 +115,18 @@ public class CucumberSteps {
   }
 
   private void callUpdateSequentially(int times, String id, BiFunction<Integer, String, Mono<Boolean>> function) {
-    responses = Flux.range(1, times)
+    var responses = Flux.range(1, times)
       .concatMap(i -> function.apply(i, id)
         .doFirst(() -> log.info("sequential exec={}: start", i))
         .doOnSuccess(unused -> log.info("sequential exec={}: end", i))
       )
       .subscribeOn(Schedulers.single());
+    responses.then().block();
   }
 
   @SneakyThrows
   private void callUpdateConcurrently(int concurrency, String id, BiFunction<Integer, String, Mono<Boolean>> function) {
-    responses = Flux.range(1, concurrency)
+    var responses = Flux.range(1, concurrency)
       .parallel(concurrency)
       .runOn(Schedulers.newParallel("parallel", concurrency))
       .flatMap(i -> function.apply(i, id)
@@ -113,6 +135,7 @@ public class CucumberSteps {
       )
       .sequential()
       .subscribeOn(Schedulers.single());
+    responses.then().block();
   }
 
   private Mono<Boolean> update(int exec, String id) {
@@ -134,8 +157,17 @@ public class CucumberSteps {
 
   @Then("the record with id {string} is updated {int} time(s)")
   public void thenTheRecordIsUpdated(String id, int expectedUpdates) {
-    StepVerifier.create(responses.then()).verifyComplete();
     var updates = db.get(id).get();
     assertThat(updates).isEqualTo(expectedUpdates);
+  }
+
+  @Then("the lock is acquired")
+  public void thenTheLockIsAcquired() {
+    assertThat(lockResult).isPresent();
+  }
+
+  @Then("the lock is not acquired")
+  public void thenTheLockIsNotAcquired() {
+    assertThat(lockResult).isNotPresent();
   }
 }
