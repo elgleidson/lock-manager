@@ -6,13 +6,11 @@ import static org.awaitility.Awaitility.await;
 import com.github.elgleidson.lock.Lock;
 import com.github.elgleidson.lock.LockFailureException;
 import com.github.elgleidson.lock.LockManager;
-import com.github.elgleidson.lock.TestApplication;
 import io.cucumber.java.Before;
 import io.cucumber.java.ParameterType;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.cucumber.spring.CucumberContextConfiguration;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
@@ -23,14 +21,7 @@ import java.util.stream.IntStream;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
-@CucumberContextConfiguration
-@SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.NONE, properties = {
-  "de.flapdoodle.mongodb.embedded.version=7.0.12",
-  "spring.data.mongodb.auto-index-creation=true"
-})
 @Slf4j
 public class CucumberSteps {
 

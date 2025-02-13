@@ -6,15 +6,11 @@ import static org.awaitility.Awaitility.await;
 import com.github.elgleidson.lock.Lock;
 import com.github.elgleidson.lock.LockFailureException;
 import com.github.elgleidson.lock.LockManager;
-import com.github.elgleidson.lock.TestApplication;
-import io.cucumber.java.AfterAll;
 import io.cucumber.java.Before;
-import io.cucumber.java.BeforeAll;
 import io.cucumber.java.ParameterType;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.cucumber.spring.CucumberContextConfiguration;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
@@ -25,16 +21,9 @@ import java.util.stream.IntStream;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import redis.embedded.RedisServer;
 
-@CucumberContextConfiguration
-@SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.NONE)
 @Slf4j
 public class CucumberSteps {
-
-  private static final RedisServer redisServer = RedisServer.builder().port(6379).build();
 
   private final Map<String, AtomicInteger> db = new ConcurrentHashMap<>();
 
@@ -44,16 +33,6 @@ public class CucumberSteps {
   private Duration ttl;
   private Duration delay;
   private Optional<Lock> lockResult;
-
-  @BeforeAll
-  public static void beforeAll()  {
-    redisServer.start();
-  }
-
-  @AfterAll
-  public static void afterAll() {
-    redisServer.stop();
-  }
 
   @Before
   public void before() {
