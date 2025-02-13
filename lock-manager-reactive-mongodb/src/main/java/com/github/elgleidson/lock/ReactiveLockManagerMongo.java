@@ -77,9 +77,9 @@ public class ReactiveLockManagerMongo implements ReactiveLockManager {
   record LockMongoEntity(
     @Id
     String id,
-    @Indexed(unique = true)
+    @Indexed(unique = true, name = "uniqueIdentifier")
     String uniqueIdentifier,
-    @Indexed(expireAfterSeconds = 0)
+    @Indexed(expireAfterSeconds = 0, name = "expiresAt")
     LocalDateTime expiresAt
   ) {
   }
