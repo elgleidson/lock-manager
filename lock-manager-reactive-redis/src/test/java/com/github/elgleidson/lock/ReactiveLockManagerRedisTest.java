@@ -5,7 +5,10 @@ import static java.time.ZoneOffset.UTC;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -44,8 +47,6 @@ class ReactiveLockManagerRedisTest {
   private ReactiveStringRedisTemplate reactiveRedisTemplate;
   @Mock
   private ReactiveValueOperations<String, String> reactiveValueOperations;
-  @Mock
-  private ReactiveLockManagerRedis.UUIDWrapper uuidWrapper;
 
   private ReactiveLockManager lockManager;
 
@@ -55,10 +56,9 @@ class ReactiveLockManagerRedisTest {
 
   @BeforeEach
   void setUp() {
-    lockManager = new ReactiveLockManagerRedis(reactiveRedisTemplate, CLOCK, uuidWrapper);
+    lockManager = new ReactiveLockManagerRedis(reactiveRedisTemplate, CLOCK, () -> LOCK_ID);
 
     lenient().when(reactiveRedisTemplate.opsForValue()).thenReturn(reactiveValueOperations);
-    lenient().doReturn(LOCK_ID).when(uuidWrapper).randomUUID();
 
     var logger = (Logger) LoggerFactory.getLogger(lockManager.getClass());
     logger.addAppender(listAppender);

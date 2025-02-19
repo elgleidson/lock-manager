@@ -4,27 +4,25 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import java.util.function.Supplier;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import reactor.core.publisher.Mono;
 
 @Slf4j
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class ReactiveLockManagerRedis implements ReactiveLockManager {
 
   protected static final String KEYSPACE = "lock:";
 
   private final ReactiveStringRedisTemplate reactiveStringRedisTemplate;
   private final Clock clock;
-  private final UUIDWrapper uuidWrapper;
+  private final Supplier<UUID> uuidSupplier;
 
   public ReactiveLockManagerRedis(ReactiveStringRedisTemplate reactiveStringRedisTemplate) {
-    this(reactiveStringRedisTemplate, Clock.systemUTC(), new UUIDWrapper());
-  }
-
-  protected ReactiveLockManagerRedis(ReactiveStringRedisTemplate reactiveStringRedisTemplate, Clock clock, UUIDWrapper uuidWrapper) {
-    this.reactiveStringRedisTemplate = reactiveStringRedisTemplate;
-    this.clock = clock;
-    this.uuidWrapper = uuidWrapper;
+    this(reactiveStringRedisTemplate, Clock.systemUTC(), UUID::randomUUID);
   }
 
   @Override
@@ -75,20 +73,13 @@ public class ReactiveLockManagerRedis implements ReactiveLockManager {
   }
 
   private Lock createLock(String uniqueIdentifier, Duration expiresIn) {
-    var id = uuidWrapper.randomUUID().toString();
+    var id = uuidSupplier.get().toString();
     var expiresAt = ZonedDateTime.now(clock).plus(expiresIn);
     return new Lock(id, uniqueIdentifier, expiresAt);
   }
 
   private String lockKey(String uniqueIdentifier) {
     return KEYSPACE + uniqueIdentifier;
-  }
-
-  protected static class UUIDWrapper {
-
-    protected UUID randomUUID() {
-      return UUID.randomUUID();
-    }
   }
 
 }

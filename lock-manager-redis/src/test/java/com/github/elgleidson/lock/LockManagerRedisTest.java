@@ -6,7 +6,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -43,8 +47,6 @@ class LockManagerRedisTest {
   private StringRedisTemplate reactiveRedisTemplate;
   @Mock
   private ValueOperations<String, String> reactiveValueOperations;
-  @Mock
-  private LockManagerRedis.UUIDWrapper uuidWrapper;
 
   private LockManager lockManager;
 
@@ -54,10 +56,9 @@ class LockManagerRedisTest {
 
   @BeforeEach
   void setUp() {
-    lockManager = new LockManagerRedis(reactiveRedisTemplate, CLOCK, uuidWrapper);
+    lockManager = new LockManagerRedis(reactiveRedisTemplate, CLOCK, () -> LOCK_ID);
 
     lenient().when(reactiveRedisTemplate.opsForValue()).thenReturn(reactiveValueOperations);
-    lenient().doReturn(LOCK_ID).when(uuidWrapper).randomUUID();
 
     var logger = (Logger) LoggerFactory.getLogger(lockManager.getClass());
     logger.addAppender(listAppender);
