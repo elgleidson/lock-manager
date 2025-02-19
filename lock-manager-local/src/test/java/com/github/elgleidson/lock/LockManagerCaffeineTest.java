@@ -5,7 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -39,8 +44,6 @@ class LockManagerCaffeineTest {
 
   @Mock
   private Cache<String, Lock> caffeineCache;
-  @Mock
-  private LockManagerCaffeine.UUIDWrapper uuidWrapper;
 
   private LockManager lockManager;
 
@@ -50,9 +53,7 @@ class LockManagerCaffeineTest {
 
   @BeforeEach
   void setUp() {
-    lockManager = new LockManagerCaffeine(caffeineCache, CLOCK, uuidWrapper);
-
-    lenient().doReturn(LOCK_ID).when(uuidWrapper).randomUUID();
+    lockManager = new LockManagerCaffeine(caffeineCache, CLOCK, () -> LOCK_ID);
 
     var logger = (Logger) LoggerFactory.getLogger(lockManager.getClass());
     logger.addAppender(listAppender);

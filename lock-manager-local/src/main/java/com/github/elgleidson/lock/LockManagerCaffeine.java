@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -15,21 +16,21 @@ public class LockManagerCaffeine implements LockManager {
 
   private final Cache<String, Lock> locks;
   private final Clock clock;
-  private final UUIDWrapper uuidWrapper;
+  private final Supplier<UUID> uuidSupplier;
 
   public LockManagerCaffeine() {
-    this(Clock.systemUTC(), new UUIDWrapper());
+    this(Clock.systemUTC(), UUID::randomUUID);
   }
 
-  protected LockManagerCaffeine(Clock clock, UUIDWrapper uuidWrapper) {
-    this(Caffeine.newBuilder().expireAfter(new LockExpiry(clock)).build(), clock, uuidWrapper);
+  protected LockManagerCaffeine(Clock clock, Supplier<UUID> uuidSupplier) {
+    this(Caffeine.newBuilder().expireAfter(new LockExpiry(clock)).build(), clock, uuidSupplier);
   }
 
-  protected LockManagerCaffeine(Cache<String, Lock> cache, Clock clock, UUIDWrapper uuidWrapper) {
+  protected LockManagerCaffeine(Cache<String, Lock> cache, Clock clock, Supplier<UUID> uuidSupplier) {
     log.warn("*** THIS LOCK MANAGER IS NOT SUITABLE FOR MULTI INSTANCES SCENARIOS. PLEASE USE ANOTHER IMPLEMENTATION! ***");
     this.locks = cache;
     this.clock = clock;
-    this.uuidWrapper = uuidWrapper;
+    this.uuidSupplier = uuidSupplier;
   }
 
   @Override
@@ -81,16 +82,9 @@ public class LockManagerCaffeine implements LockManager {
   }
 
   private Lock createLock(String uniqueIdentifier, Duration expiresIn) {
-    var id = uuidWrapper.randomUUID().toString();
+    var id = uuidSupplier.get().toString();
     var expiresAt = ZonedDateTime.now(clock).plus(expiresIn);
     return new Lock(id, uniqueIdentifier, expiresAt);
-  }
-
-  protected static class UUIDWrapper {
-
-    protected UUID randomUUID() {
-      return UUID.randomUUID();
-    }
   }
 
   private static class LockExpiry implements Expiry<String, Lock> {
