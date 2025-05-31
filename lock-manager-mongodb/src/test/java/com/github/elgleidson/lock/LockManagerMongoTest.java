@@ -78,7 +78,7 @@ class LockManagerMongoTest {
     var exception = new DuplicateKeyException("test exception");
     givenMongoInsertThrowsAnException(exception);
     assertThatExceptionOfType(LockFailureException.class)
-      .isThrownBy(() -> whenILock())
+      .isThrownBy(this::whenILock)
       .withMessage("Lock already acquired on 'my-unique-identifier'!");
     thenMongoInsertIsInvoked();
     thenTheLogsContains("[WARN] error lock(): lock already acquired on 'my-unique-identifier'!");
@@ -89,7 +89,7 @@ class LockManagerMongoTest {
     var exception = new RuntimeException("test exception");
     givenMongoInsertThrowsAnException(exception);
     assertThatExceptionOfType(LockFailureException.class)
-      .isThrownBy(() -> whenILock())
+      .isThrownBy(this::whenILock)
       .withMessage("Failed to acquire lock on 'my-unique-identifier'")
       .withCause(exception);
     thenMongoInsertIsInvoked();
@@ -175,7 +175,7 @@ class LockManagerMongoTest {
   }
 
   private void thenTheLogsContains(String expectedErrorMessage) {
-    assertThat(listAppender.list.stream().map(l -> l.toString())).contains(expectedErrorMessage);
+    assertThat(listAppender.list.stream().map(Object::toString)).contains(expectedErrorMessage);
   }
 
 }

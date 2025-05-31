@@ -123,7 +123,7 @@ public class CucumberSteps {
   @SneakyThrows
   private boolean update(int exec, String id) {
     log.info("exec={}: updating id={}", exec, id);
-    Thread.sleep(delay); // to simulate processing
+    await().during(delay).until(() -> true); // to simulate processing
     var updates = db.get(id).incrementAndGet();
     log.info("exec={}: updated id={}, updates={}", exec, id, updates);
     return true;

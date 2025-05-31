@@ -47,7 +47,7 @@ class LockManagerTest {
     var exception = new RuntimeException("test");
     givenASupplier();
     givenACallToLock(exception);
-    assertThatException().isThrownBy(() -> whenIWrap()).isEqualTo(exception);
+    assertThatException().isThrownBy(this::whenIWrap).isEqualTo(exception);
     thenLockIsInvoked();
     thenSupplierIsNotCalled();
     thenUnlockIsNotInvoked();
@@ -59,7 +59,7 @@ class LockManagerTest {
     givenASupplier(exception);
     givenACallToLock();
     givenACallToUnlock();
-    assertThatException().isThrownBy(() -> whenIWrap()).isEqualTo(exception);
+    assertThatException().isThrownBy(this::whenIWrap).isEqualTo(exception);
     thenLockIsInvoked();
     thenSupplierIsCalled();
     thenUnlockIsInvoked();

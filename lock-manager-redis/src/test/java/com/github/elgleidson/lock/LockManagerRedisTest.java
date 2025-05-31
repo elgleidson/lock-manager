@@ -82,7 +82,7 @@ class LockManagerRedisTest {
   void lockAlreadyLocked() {
     givenRedisTemplateInsertIsInvokedSuccessfully(false);
     assertThatExceptionOfType(LockFailureException.class)
-      .isThrownBy(() -> whenILock())
+      .isThrownBy(this::whenILock)
       .withMessage("Lock already acquired on 'my-unique-identifier'!");
     thenRedisTemplateInsertIsInvoked();
     thenTheLogsContains("[WARN] error lock(): lock already acquired on 'my-unique-identifier'!");
@@ -93,7 +93,7 @@ class LockManagerRedisTest {
     var exception = new RuntimeException("test exception");
     givenRedisTemplateInsertThrowsAnException(exception);
     assertThatExceptionOfType(LockFailureException.class)
-      .isThrownBy(() -> whenILock())
+      .isThrownBy(this::whenILock)
       .withMessage("Failed to acquire lock on 'my-unique-identifier'")
       .withCause(exception);
     thenRedisTemplateInsertIsInvoked();
@@ -245,7 +245,7 @@ class LockManagerRedisTest {
   }
 
   private void thenTheLogsContains(String expectedErrorMessage) {
-    assertThat(listAppender.list.stream().map(l -> l.toString())).contains(expectedErrorMessage);
+    assertThat(listAppender.list.stream().map(Object::toString)).contains(expectedErrorMessage);
   }
 
 }

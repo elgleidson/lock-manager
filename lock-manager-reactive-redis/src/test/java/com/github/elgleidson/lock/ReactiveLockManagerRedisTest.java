@@ -257,7 +257,7 @@ class ReactiveLockManagerRedisTest {
   }
 
   private void thenTheLogsContains(String expectedErrorMessage) {
-    assertThat(listAppender.list.stream().map(l -> l.toString())).contains(expectedErrorMessage);
+    assertThat(listAppender.list.stream().map(Object::toString)).contains(expectedErrorMessage);
   }
 
 }
