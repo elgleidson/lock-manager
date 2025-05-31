@@ -32,24 +32,20 @@
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
     </dependency>
+    <!-- UNIT TESTS -->
     <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-junit-jupiter</artifactId>
-      <scope>test</scope>
+      <groupId>io.projectreactor</groupId>
+      <artifactId>reactor-test</artifactId>
     </dependency>
+    <!-- INTEGRATION (CUCUMBER) TESTS -->
     <dependency>
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-java</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-spring</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -63,10 +59,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-spring</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- TEST CONTAINERS -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-testcontainers</artifactId>
@@ -74,26 +71,7 @@
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>testcontainers</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
       <artifactId>mongodb</artifactId>
-      <version>${testcontainers.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-resolver-dns-native-macos</artifactId>
-      <scope>runtime</scope>
-      <classifier>osx-aarch_64</classifier>
-      <version>4.1.112.Final</version>
     </dependency>
   </dependencies>
 

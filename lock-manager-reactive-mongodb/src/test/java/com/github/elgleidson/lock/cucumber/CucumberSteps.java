@@ -35,6 +35,7 @@ public class CucumberSteps {
   private Duration ttl;
   private Duration delay;
   private Optional<Lock> lockResult;
+  private Boolean unlockResult;
 
   @Before
   public void before() {
@@ -77,7 +78,7 @@ public class CucumberSteps {
   @Given("I unlock")
   public void givenIUnlock() {
     var lock = lockResult.get();
-    lockManager.unlock(lock).block();
+    unlockResult = lockManager.unlock(lock).block();
   }
 
   @Given("I wait {duration}")
@@ -160,5 +161,10 @@ public class CucumberSteps {
   @Then("the lock is not acquired")
   public void thenTheLockIsNotAcquired() {
     assertThat(lockResult).isNotPresent();
+  }
+
+  @Then("the lock is released")
+  public void thenTheLockIsReleased() {
+    assertThat(unlockResult).isTrue();
   }
 }

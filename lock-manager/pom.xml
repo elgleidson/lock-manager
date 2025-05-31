@@ -23,6 +23,7 @@
       <artifactId>lock-manager-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- UNIT TESTS -->
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>

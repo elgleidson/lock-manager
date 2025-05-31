@@ -42,6 +42,7 @@ Feature: Lock manager
     When I try to lock the record with id of "123-unlocked"
     Then the lock is acquired
     Given I unlock
+    Then the lock is released
     When I try to lock the record with id of "123-unlocked"
     Then the lock is acquired
 
