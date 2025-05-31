@@ -81,7 +81,7 @@ public class LockManagerMongo implements LockManager {
     String id,
     @Indexed(unique = true, name = "uniqueIdentifier")
     String uniqueIdentifier,
-    @Indexed(expireAfterSeconds = 0, name = "expiresAt")
+    @Indexed(expireAfter = "0s", name = "expiresAt")
     LocalDateTime expiresAt
   ) {
   }
