@@ -84,7 +84,7 @@ public class MyReactiveService {
   private final MyReactiveRepository myRepository;
   private final ReactiveLockManager lockManager;
 
-  public Mono<MyResult> doSomethingWrap() {
+  public Mono<MyResult> doSomething() {
     return lockManager.wrap("my-unique-identifier", Duration.ofSeconds(30), () -> {
         return myRepository.doSomething();
       })
